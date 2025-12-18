@@ -111,11 +111,41 @@ topn  <- cca.data[1:n_top, -ncol(cca.data), drop = FALSE]
 # Eliminar duplicados de nombre si existieran
 topn <- topn[!duplicated(rownames(topn)), , drop = FALSE]
 
+# Crear tabla taxonómica para topn
+tax_strings <- rownames(topn)   # k__...|p__...|...
+
+tax_split <- strsplit(tax_strings, "\\|")
+
+tax_df <- do.call(rbind, lapply(tax_split, function(x) {
+  x <- c(x, rep(NA, 7 - length(x)))  # hasta 7 niveles
+  x
+}))
+
+colnames(tax_df) <- c("Kingdom","Phylum","Class","Order",
+                      "Family","Genus","Species")
+rownames(tax_df) <- tax_strings
+
 # Simplificar nombre al último nivel taxonómico (sin prefijos)
-rownames(topn) <- sub(
+simple_names <- sub(
   "^[a-z]__*", "",
-  sapply(strsplit(rownames(topn), "\\|"), tail, 1)
+  sapply(strsplit(tax_strings, "\\|"), tail, 1)
 )
+
+tax_table_topn <- data.frame(
+  Taxon_simple = simple_names,
+  Kingdom = tax_df[, "Kingdom"],
+  Phylum  = tax_df[, "Phylum"],
+  Class   = tax_df[, "Class"],
+  Order   = tax_df[, "Order"],
+  Family  = tax_df[, "Family"],
+  Genus   = tax_df[, "Genus"],
+  Species = tax_df[, "Species"],
+  row.names = simple_names,
+  check.names = FALSE,
+  stringsAsFactors = FALSE
+)
+
+rownames(topn) <- simple_names
 
 write.table(
   topn,
@@ -216,11 +246,10 @@ write_graph(
 network <- delete_vertices(network, which(degree(network) == 0))
 
 taxa    <- V(network)$name
-colores <- wes_palette(
-  n    = length(unique(taxa)),
-  name = "Moonrise3",
-  type = "continuous"
-)
+phylum_fac <- factor(tax_table_topn[taxa, "Phylum"])
+n_phyla <- length(levels(phylum_fac))
+pal_phy <- brewer.pal(min(n_phyla, 12), "Set1")
+V(network)$color <- pal_phy[ as.numeric(phylum_fac) ]
 
 edge_vals        <- as.numeric(E(network)$weight)
 E(network)$color <- ifelse(edge_vals > 0, "blue", "red")
@@ -236,10 +265,19 @@ plot(
   vertex.label.family = "Helvetica",
   vertex.frame.color  = "transparent",
   vertex.label.color  = "black",
-  vertex.color        = colores,
+  vertex.color        = V(network)$color,
   edge.color          = E(network)$color,
   vertex.label.cex    = 0.5,
   edge.arrow.size     = 0.1
+)
+legend(
+  "topleft",
+  legend = levels(phylum_fac),
+  col    = pal_phy[seq_along(levels(phylum_fac))],
+  pch    = 16,
+  pt.cex = 1.5,
+  bty    = "n",
+  title  = "Phylum"
 )
 dev.off()
 
@@ -256,7 +294,7 @@ plot_dendrogram(ceb, mode = "hclust")
 dev.off()
 
 png(
-  filename = "0_figs/cooccur_network_sign_clusterized.png",
+  filename = "0_figs/cooccur_network_sign_clusterized2.png",
   width    = 2500,
   height   = 2500,
   res      = 300
@@ -267,7 +305,7 @@ plot(
   vertex.label.family = "Helvetica",
   vertex.frame.color  = "transparent",
   vertex.label.color  = "black",
-  vertex.color        = V(network)$name,
+  vertex.color        = V(network)$color,
   edge.color          = E(network)$color,
   vertex.label.cex    = 0.5,
   edge.arrow.size     = 0.1
