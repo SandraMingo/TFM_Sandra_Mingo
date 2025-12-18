@@ -1,0 +1,11 @@
+Taxon	Comparison	pval	pval_adj	signif
+Alistipes	Sexo:Mujer_vs_Hombre	0.01	0.03	*
+Bacteroides	Sexo:Mujer_vs_Hombre	0.176	0.251428571428571	
+Bifidobacterium	Sexo:Mujer_vs_Hombre	0.255	0.283333333333333	
+Clostridium_innocuum_group	Sexo:Mujer_vs_Hombre	0.005	0.025	*
+Enterococcus	Sexo:Mujer_vs_Hombre	0.012	0.03	*
+Lachnoclostridium	Sexo:Mujer_vs_Hombre	0.503	0.503	
+Parabacteroides	Sexo:Mujer_vs_Hombre	0.102	0.17	
+Prevotella_9	Sexo:Mujer_vs_Hombre	0.098	0.17	
+Staphylococcus	Sexo:Mujer_vs_Hombre	0.227	0.283333333333333	
+Streptococcus	Sexo:Mujer_vs_Hombre	0.005	0.025	*

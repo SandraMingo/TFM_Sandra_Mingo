@@ -1,0 +1,6 @@
+Taxon	n_total	n_inmuno	beta	se	p_value	p_value_adj	sig
+Enterococcus	59	3	0.7709	0.1013	0	0	***
+Bacteroides	71	3	-0.2139	0.1022	0.04	0.1	**
+Staphylococcus	50	3	0.0562	0.0336	0.1006	0.1676	
+Alistipes	65	3	-0.093	0.0679	0.176	0.2199	
+Streptococcus	56	3	-0.0508	0.0445	0.2589	0.2589	

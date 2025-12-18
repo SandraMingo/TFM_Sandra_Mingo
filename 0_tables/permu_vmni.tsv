@@ -1,0 +1,9 @@
+Taxon	Comparison	pval	pval_adj	signif
+Alistipes	VMNI.durante.el.ingreso:No_vs_Sí	0.217	0.538666666666667	
+Bacteroides	VMNI.durante.el.ingreso:No_vs_Sí	0.345	0.538666666666667	
+Bifidobacterium	VMNI.durante.el.ingreso:No_vs_Sí	0.398	0.538666666666667	
+Enterococcus	VMNI.durante.el.ingreso:No_vs_Sí	0.59	0.59	
+Lachnoclostridium	VMNI.durante.el.ingreso:No_vs_Sí	0.587	0.59	
+Parabacteroides	VMNI.durante.el.ingreso:No_vs_Sí	0.103	0.484	
+Staphylococcus	VMNI.durante.el.ingreso:No_vs_Sí	0.404	0.538666666666667	
+Streptococcus	VMNI.durante.el.ingreso:No_vs_Sí	0.121	0.484	

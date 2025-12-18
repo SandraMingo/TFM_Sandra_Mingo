@@ -1,0 +1,11 @@
+Taxon	pval	pval_adj	signif
+Bifidobacterium	0.332	0.664	
+Bacteroides	0.001	0.01	*
+Prevotella_9	0.63	0.723333333333333	
+Alistipes	0.015	0.0733333333333333	
+Parabacteroides	0.745	0.745	
+Clostridium_innocuum_group	0.022	0.0733333333333333	
+Enterococcus	0.599	0.723333333333333	
+Streptococcus	0.651	0.723333333333333	
+Staphylococcus	0.509	0.723333333333333	
+Lachnoclostridium	0.273	0.664	
