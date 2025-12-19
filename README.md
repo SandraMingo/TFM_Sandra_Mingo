@@ -23,6 +23,8 @@ Este repositorio contiene el proyecto desarrollado como parte del Trabajo de Fin
 │   ├── pvalues.tsv
 │   ├── top_PA.tsv
 │   └── net.sp.tsv
+├── environment-cograph.yml  # Entorno conda para FastSpar
+├── run_fastspar.sh
 ├── script_adonis.R
 ├── script_diff_abund_ancom.R
 ├── script_diversity_clinical_vars.R
@@ -39,4 +41,17 @@ El orden en el que se han creado y ejecutado los scripts, y el orden en el que s
 - `script_diversity_clinical_vars.R`
 - `script_longitudinal_analysis.R`
 - `script_diff_abund_ancom.R`
-- `script_network_analysis.R`
+- `script_network_analysis.R` (secciones 1-4)
+- `run_fastspar.sh`
+- `script_network_analysis.R` (sección 5)
+
+## Requisitos y entornos
+
+El trabajo se ha realizado en Linux Mint 22.2 Cinnamon mediante el uso de entornos de **conda** y en R 4.3.3. En el repositorio se incluye el fichero `yml` con los requisitos concretos para FastSpar. 
+
+```
+conda env create -f environment-cograph.yml
+conda activate cograph
+```
+
+Los paquetes de R necesarios para ejecutar los scripts se encuentran especificados al inicio de cada uno.
