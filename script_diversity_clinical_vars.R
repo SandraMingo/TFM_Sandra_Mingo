@@ -11,7 +11,7 @@
 # Entradas:
 #   - 1_input/aggregated_taxonomy_table_qiime.tsv
 #   - 1_input/metadata.csv
-#   - 0_tables/metadata_clean.tsv (si se ha generado antes)
+#   - 0_tables/metadata_clean.tsv 
 #
 # Salidas:
 #   - 0_figs/Paciente_<VAR>/alfa_<var>.svg
