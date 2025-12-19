@@ -13,9 +13,9 @@ Este repositorio contiene el proyecto desarrollado como parte del Trabajo de Fin
 ├── 0_tables/                # Tablas generadas a lo largo del pipeline
 ├── 1_input/                 # Metadatos y asignación taxonómica realizada con QIIME2
 ├── 2_fastspar/              # Estimación de la correlación de datos composicionales con FastSpar
-├── 3_cooccurrence_network/  # Resultados de la red de coocurrencia de FastSpar
 │   ├── bootstrap_corr/      # Correlación de bootstrap para FastSpar
-│   ├── bootstrap_counts/    # Conteo de bootstrap para FastSpar
+│   └── bootstrap_counts/    # Conteo de bootstrap para FastSpar
+├── 3_cooccurrence_network/  # Resultados de la red de coocurrencia de CooccurrenceAffinity R
 │   ├── affinity.tsv        
 │   ├── alpha_mle.tsv     
 │   ├── alpha_sign_selected.tsv
@@ -28,5 +28,15 @@ Este repositorio contiene el proyecto desarrollado como parte del Trabajo de Fin
 ├── script_diversity_clinical_vars.R
 ├── script_longitudinal_analysis.R
 ├── script_network_analysis.R
+├── script_patient_analysis.R
 └── README.md
 ```
+
+El orden en el que se han creado y ejecutado los scripts, y el orden en el que se deberían leer, es:
+
+- `script_adonis.R`
+- `script_patient_analysis.R`
+- `script_diversity_clinical_vars.R`
+- `script_longitudinal_analysis.R`
+- `script_diff_abund_ancom.R`
+- `script_network_analysis.R`
