@@ -1,0 +1,11 @@
+Taxon	n_total	n_traq	beta	se	p_value	p_value_adj	sig
+Enterococcus	55	47	0.1978	0.0966	0.0456	0.3423	**
+Bifidobacterium	45	37	0.0191	0.0102	0.0685	0.3423	*
+Parabacteroides	51	43	-0.0374	0.0258	0.154	0.5132	
+Bacteroides	58	50	-0.0662	0.0637	0.303	0.6719	
+Prevotella_9	27	25	0.1238	0.1277	0.3424	0.6719	
+Lachnoclostridium	37	33	0.0299	0.0353	0.4031	0.6719	
+Clostridium_innocuum_group	44	40	-0.0251	0.0422	0.5554	0.7451	
+Staphylococcus	46	38	-0.0162	0.0303	0.5961	0.7451	
+Streptococcus	45	37	-0.0125	0.042	0.7677	0.853	
+Alistipes	56	48	-0.0046	0.0477	0.9229	0.9229	

@@ -1,0 +1,11 @@
+Taxon	n_total	n_gnaf	beta	se	p_value	p_value_adj	sig
+Streptococcus	56	48	-0.0816	0.0279	0.005	0.0503	**
+Bacteroides	74	66	-0.1167	0.0688	0.0941	0.3939	*
+Parabacteroides	63	57	-0.042	0.027	0.1251	0.3939	
+Enterococcus	61	54	0.1337	0.0934	0.1576	0.3939	
+Bifidobacterium	50	44	0.0195	0.0151	0.2046	0.4091	
+Lachnoclostridium	42	40	0.0523	0.045	0.2524	0.4207	
+Staphylococcus	56	49	-0.0265	0.0252	0.2974	0.4249	
+Alistipes	68	60	-0.0373	0.0425	0.3826	0.4782	
+Prevotella_9	27	25	0.0689	0.1259	0.5892	0.6547	
+Clostridium_innocuum_group	53	46	0.0042	0.0328	0.8981	0.8981	
