@@ -17,8 +17,8 @@
 #   - 1_input/metadata.csv
 #
 # Salidas:
-#   - 0_figs/NMDS_por_variable/NMDS_*.png
-#   - 0_tables/NMDS_estadisticos_resumen.csv
+#   - 0_figs/NMDS_por_variable/NMDS_*.svg
+#   - 0_tables/adonis2_estadisticos_resumen.csv
 #
 # Requisitos:
 #   - R >= 4.0
@@ -96,7 +96,7 @@ run_nmds_analysis <- function(
   cols       <- as.numeric(factor_var)
   
   # NMDS
-  png(file_name, width = 2000, height = 2000, res = 300)
+  svg(file_name, width = 8, height = 8)
   plot(
     nmds$points,
     col  = cols,
@@ -144,20 +144,20 @@ run_nmds_analysis <- function(
 # 4. VARIABLES CATEGÓRICAS
 # ----------------------------------------------------------------------
 results <- bind_rows(
-  run_nmds_analysis("Batch",                 "Batch",                  metadata, dist_mat, nmds, "0_figs/NMDS_por_variable/NMDS_batch.png"),
-  run_nmds_analysis("Sexo",                  "Sexo",                   metadata, dist_mat, nmds, "0_figs/NMDS_por_variable/NMDS_sexo.png"),
-  run_nmds_analysis("Foco",                  "Foco",                   metadata, dist_mat, nmds, "0_figs/NMDS_por_variable/NMDS_foco.png"),
-  run_nmds_analysis("Inmunosuprimido",       "Inmunosuprimido",        metadata, dist_mat, nmds, "0_figs/NMDS_por_variable/NMDS_inmunosuprimido.png", use_anosim = FALSE),
-  run_nmds_analysis("NHC",                   "Paciente (NHC)",         metadata, dist_mat, nmds, "0_figs/NMDS_por_variable/NMDS_NHC.png"),
-  run_nmds_analysis("Mortalidad.UCI",        "Mortalidad UCI",         metadata, dist_mat, nmds, "0_figs/NMDS_por_variable/NMDS_mortalidad_UCI.png"),
-  run_nmds_analysis("Mortalidad.hospitalaria","Mortalidad hospitalaria",metadata, dist_mat, nmds, "0_figs/NMDS_por_variable/NMDS_mortalidad_hospitalaria.png"),
-  run_nmds_analysis("Traqueostomia",         "Traqueostomía",          metadata, dist_mat, nmds, "0_figs/NMDS_por_variable/NMDS_traqueostomia.png", use_anosim = FALSE),
-  run_nmds_analysis("VM.durante.el.ingreso", "Ventilación mecánica",   metadata, dist_mat, nmds, "0_figs/NMDS_por_variable/NMDS_VM.png", use_anosim = FALSE),
-  run_nmds_analysis("GNAF.durante.elingreso","GNAF",                   metadata, dist_mat, nmds, "0_figs/NMDS_por_variable/NMDS_GNAF.png", use_anosim = FALSE),
-  run_nmds_analysis("VMNI.durante.el.ingreso","VMNI",                  metadata, dist_mat, nmds, "0_figs/NMDS_por_variable/NMDS_VMNI.png", use_anosim = FALSE),
-  run_nmds_analysis("Riesgo.RZ",             "Riesgo RZ",              metadata, dist_mat, nmds, "0_figs/NMDS_por_variable/NMDS_RiesgoRZ.png", use_anosim = FALSE),
-  run_nmds_analysis("Bicho",                 "Microorganismo",         metadata, dist_mat, nmds, "0_figs/NMDS_por_variable/NMDS_Bicho.png", use_anosim = FALSE),
-  run_nmds_analysis("X.Ingresa.séptico.",    "Ingreso séptico",        metadata, dist_mat, nmds, "0_figs/NMDS_por_variable/NMDS_Ingreso_septico.png", use_anosim = FALSE)
+  run_nmds_analysis("Batch",                 "Batch",                  metadata, dist_mat, nmds, "0_figs/NMDS_por_variable/NMDS_batch.svg"),
+  run_nmds_analysis("Sexo",                  "Sexo",                   metadata, dist_mat, nmds, "0_figs/NMDS_por_variable/NMDS_sexo.svg"),
+  run_nmds_analysis("Foco",                  "Foco",                   metadata, dist_mat, nmds, "0_figs/NMDS_por_variable/NMDS_foco.svg"),
+  run_nmds_analysis("Inmunosuprimido",       "Inmunosuprimido",        metadata, dist_mat, nmds, "0_figs/NMDS_por_variable/NMDS_inmunosuprimido.svg"),
+  run_nmds_analysis("NHC",                   "Paciente (NHC)",         metadata, dist_mat, nmds, "0_figs/NMDS_por_variable/NMDS_NHC.svg"),
+  run_nmds_analysis("Mortalidad.UCI",        "Mortalidad UCI",         metadata, dist_mat, nmds, "0_figs/NMDS_por_variable/NMDS_mortalidad_UCI.svg"),
+  run_nmds_analysis("Mortalidad.hospitalaria","Mortalidad hospitalaria",metadata, dist_mat, nmds, "0_figs/NMDS_por_variable/NMDS_mortalidad_hospitalaria.svg"),
+  run_nmds_analysis("Traqueostomia",         "Traqueostomía",          metadata, dist_mat, nmds, "0_figs/NMDS_por_variable/NMDS_traqueostomia.svg"),
+  run_nmds_analysis("VM.durante.el.ingreso", "Ventilación mecánica",   metadata, dist_mat, nmds, "0_figs/NMDS_por_variable/NMDS_VM.svg"),
+  run_nmds_analysis("GNAF.durante.elingreso","GNAF",                   metadata, dist_mat, nmds, "0_figs/NMDS_por_variable/NMDS_GNAF.svg"),
+  run_nmds_analysis("VMNI.durante.el.ingreso","VMNI",                  metadata, dist_mat, nmds, "0_figs/NMDS_por_variable/NMDS_VMNI.svg"),
+  run_nmds_analysis("Riesgo.RZ",             "Riesgo RZ",              metadata, dist_mat, nmds, "0_figs/NMDS_por_variable/NMDS_RiesgoRZ.svg"),
+  run_nmds_analysis("Bicho",                 "Microorganismo",         metadata, dist_mat, nmds, "0_figs/NMDS_por_variable/NMDS_Bicho.svg"),
+  run_nmds_analysis("X.Ingresa.séptico.",    "Ingreso séptico",        metadata, dist_mat, nmds, "0_figs/NMDS_por_variable/NMDS_Ingreso_septico.svg")
 )
 
 # ----------------------------------------------------------------------
@@ -177,7 +177,7 @@ metadata_clean$SAPS.II.group <- cut(
   labels = c("Bajo", "Medio-Bajo", "Medio-Alto", "Alto")
 )
 
-png("0_figs/NMDS_por_variable/NMDS_SAPSII.png", width = 2000, height = 2000, res = 300)
+svg("0_figs/NMDS_por_variable/NMDS_SAPSII.svg", width = 10, height = 10)
 plot(
   nmds_saps$points,
   col  = as.numeric(metadata_clean$SAPS.II.group),
@@ -222,6 +222,6 @@ results_fdr <- results %>%
 
 write.csv(
   results_fdr,
-  "0_tables/NMDS_estadisticos_resumen.csv",
+  "0_tables/adonis2_estadisticos_resumen.csv",
   row.names = FALSE
 )

@@ -14,10 +14,10 @@
 #   - 0_tables/metadata_clean.tsv (si se ha generado antes)
 #
 # Salidas:
-#   - 0_figs/Paciente_<VAR>/alfa_<var>.png
-#   - 0_figs/Paciente_<VAR>/bray-curtis-nmds.png
-#   - 0_figs/Paciente_<VAR>/jaccard-nmds.png
-#   - 0_figs/Paciente_<VAR>/abund_rel_por_<var>.png
+#   - 0_figs/Paciente_<VAR>/alfa_<var>.svg
+#   - 0_figs/Paciente_<VAR>/bray-curtis-nmds.svg
+#   - 0_figs/Paciente_<VAR>/jaccard-nmds.svg
+#   - 0_figs/Paciente_<VAR>/abund_rel_por_<var>.svg
 #
 # Requisitos:
 #   - R >= 4.0
@@ -52,9 +52,6 @@ set.seed(123)
 PROJECT_DIR <- "/home/sandra/Projects/UCI_Variables/"
 setwd(PROJECT_DIR)
 
-dir.create("0_figs", showWarnings = FALSE)
-dir.create("0_tables", showWarnings = FALSE)
-
 # ----------------------------------------------------------------------
 # 1. FUNCIONES AUXILIARES COMUNES
 # ----------------------------------------------------------------------
@@ -81,7 +78,7 @@ make_metadata_clean <- function(meta_path_in, meta_path_out) {
   metadata <- read.csv(meta_path_in, header = TRUE, row.names = 1, check.names = FALSE)
   rownames(metadata) <- gsub("_L001", "", rownames(metadata))
   
-  # Ejemplo de corrección específica (como en tu script de NHC)
+  # Corrección específica 
   metadata <- metadata %>%
     mutate(
       Tiempo = ifelse(
@@ -103,7 +100,7 @@ make_metadata_clean <- function(meta_path_in, meta_path_out) {
   metadata
 }
 
-# 1.3 Cargar metadata limpia (si ya existe)
+# 1.3 Cargar metadata limpia 
 load_metadata_clean <- function(meta_path_clean) {
   read.table(meta_path_clean, header = TRUE, row.names = 1,
              check.names = FALSE, sep = "\t")
@@ -239,8 +236,8 @@ run_alpha_beta_for_factor <- function(
   
   (p1 | p2 | p3)
   ggsave(
-    file.path(outdir, paste0("alfa_", var_name, ".png")),
-    width = 10, height = 5, dpi = 300
+    file.path(outdir, paste0("alfa_", var_name, ".svg")),
+    width = 10, height = 5
   )
   
   # ------------------------------------------------------------------
@@ -249,8 +246,8 @@ run_alpha_beta_for_factor <- function(
   dist_bc <- phyloseq::distance(pseq, method = "bray")
   nmds_bc <- vegan::metaMDS(dist_bc, k = 2, trymax = 100)
   
-  permanova_res_bc <- adonis2(dist_bc ~ .data[[var_name]],
-                              data = meta_f, permutations = 999)
+  formula_bc <- as.formula(paste("dist_bc ~", var_name))
+  permanova_res_bc <- adonis2(formula_bc, data = meta_f, permutations = 999)
   bd_bc <- betadisper(dist_bc, meta_f[[var_name]])
   permutest(bd_bc)
   
@@ -284,9 +281,9 @@ run_alpha_beta_for_factor <- function(
     )
   
   ggsave(
-    file.path(outdir, "bray-curtis-nmds.png"),
+    file.path(outdir, "bray-curtis-nmds.svg"),
     p_bc,
-    width = 10, height = 10, dpi = 300
+    width = 10, height = 10
   )
   
   # Jaccard
@@ -297,8 +294,8 @@ run_alpha_beta_for_factor <- function(
   dist_jac <- phyloseq::distance(pseq_pa, method = "jaccard", binary = TRUE)
   nmds_jac <- vegan::metaMDS(dist_jac, k = 2, trymax = 100)
   
-  permanova_res_jac <- adonis2(dist_jac ~ .data[[var_name]],
-                               data = meta_f, permutations = 999)
+  formula_jac <- as.formula(paste("dist_jac ~", var_name))
+  permanova_res_jac <- adonis2(formula_jac, data = meta_f, permutations = 999)
   
   nmds_jac_df <- as.data.frame(nmds_jac$points)
   nmds_jac_df$Sample <- rownames(nmds_jac_df)
@@ -330,9 +327,9 @@ run_alpha_beta_for_factor <- function(
     )
   
   ggsave(
-    file.path(outdir, "jaccard-nmds.png"),
+    file.path(outdir, "jaccard-nmds.svg"),
     p_jac,
-    width = 10, height = 10, dpi = 300
+    width = 10, height = 10
   )
   
   # ------------------------------------------------------------------
@@ -360,9 +357,9 @@ run_alpha_beta_for_factor <- function(
     theme(panel.grid.minor = element_blank())
   
   ggsave(
-    file.path(outdir, paste0("abund_rel_por_", var_name, ".png")),
+    file.path(outdir, paste0("abund_rel_por_", var_name, ".svg")),
     p_comp,
-    width = 7, height = 5, dpi = 300
+    width = 7, height = 5
   )
   
   invisible(list(
@@ -379,7 +376,6 @@ message("[1/2] Cargando tabla QIIME2 y metadata limpia...")
 
 table_qiime <- load_qiime_table("1_input/aggregated_taxonomy_table_qiime.tsv")
 
-# Si ya está metadata_clean.tsv, usa:
 metadata_clean_path <- "0_tables/metadata_clean.tsv"
 if (file.exists(metadata_clean_path)) {
   metadata <- load_metadata_clean(metadata_clean_path)
@@ -403,19 +399,28 @@ message("[2/2] Ejecutando análisis por variable...")
 
 vars_factoriales <- c(
   "Sexo",
-  "Inmunosuprimido",
-  "VMNI.durante.el.ingreso",
-  "Inmunosuprimido"
+  "Inmunosuprimido", 
+  "VMNI.durante.el.ingreso"
 )
 
 results <- list()
 
 for (v in vars_factoriales) {
+  if (!v %in% colnames(metadata)) {
+    warning("Variable no encontrada: ", v)
+    next
+  }
+  
   message("  - Variable: ", v)
+  
+  metadata_v <- metadata
+  metadata_v[[v]][metadata_v[[v]] == ""] <- NA  
+  metadata_v <- metadata_v %>% filter(!is.na(.data[[v]]))  
+  
   outdir_v <- file.path("0_figs", paste0("Paciente_", v))
   res_v <- run_alpha_beta_for_factor(
     abund   = table_qiime,
-    meta    = metadata,
+    meta    = metadata_v, 
     var_name = v,
     outdir  = outdir_v
   )

@@ -22,7 +22,9 @@
 #   - 0_tables/trendy_result.tsv
 #   - 0_tables/permu_sexo.tsv
 #   - 0_tables/som_model.RData
-#   - resultados_gam_*_por_taxon.tsv, resultados_gam_*.tsv
+#   - 0_tables/resultados_gam_*_por_taxon.tsv
+#   - 0_tables/resultados_gam_*_global.tsv
+#   - 0_tables/resultados_gam_*_temporal.tsv
 #
 # Requisitos:
 #   - R >= 4.0
@@ -38,6 +40,9 @@ set.seed(123)
 
 PROJECT_DIR <- "/home/sandra/Projects/UCI_Variables/"
 setwd(PROJECT_DIR)
+
+dir.create("0_figs/Paciente_longitudinal/", recursive = TRUE, showWarnings = FALSE)
+dir.create("0_tables/", recursive = TRUE, showWarnings = FALSE)
 
 # ----------------------------------------------------------------------
 # 1. LIBRERÍAS
@@ -94,6 +99,8 @@ rownames(table_qiime) <- rownames(table_qiime) |>
   str_replace("f__", "") |>
   str_replace("g__", "")
 
+colnames(table_qiime) <- gsub("_L001", "", colnames(table_qiime))
+
 samples <- intersect(colnames(table_qiime), rownames(metadata))
 table_qiime <- table_qiime[, samples]
 metadata    <- metadata[samples, ]
@@ -105,7 +112,6 @@ metadata <- metadata %>%
   rownames_to_column(var = "SampleID")
 
 tax_long <- table_qiime %>%
-  rename(Taxon = 1) %>%
   pivot_longer(
     cols      = -Taxon,
     names_to  = "SampleID",
@@ -369,8 +375,8 @@ alpha_div_plot <- ggplot(adiv_plot, aes(x = Tiempo, y = Mean, group = Index)) +
   )
 
 print(alpha_div_plot)
-png("0_figs/Paciente_longitudinal/alpha_temporal.png",
-    width = 1500, height = 700, res = 120)
+svg("0_figs/Paciente_longitudinal/alpha_temporal.svg",
+    width = 12, height = 7)
 print(alpha_div_plot)
 dev.off()
 
@@ -428,8 +434,8 @@ dbp_trendy_plot <- trendyspliner.plot.perms(
 alpha_trendy_all <- (shannon_trendy_plot / chao_trendy_plot / dbp_trendy_plot) +
   plot_layout(ncol = 1)
 
-png("0_figs/Paciente_longitudinal/alpha_trendy_all.png",
-    width = 1000, height = 1400, res = 120)
+svg("0_figs/Paciente_longitudinal/alpha_trendy_all.svg",
+    width = 8, height = 10)
 print(alpha_trendy_all)
 dev.off()
 
@@ -523,6 +529,8 @@ permuspliner_by_variable <- function(long_data, variable, min_samples_per_group 
 
 splinectome_df$Sexo[splinectome_df$Sexo == ""] <- NA
 
+set.seed(123)
+
 permu_sexo <- permuspliner_by_variable(splinectome_df, "Sexo")
 write.table(
   permu_sexo,
@@ -559,8 +567,8 @@ for (taxon_i in sig_taxa) {
   )
   
   print(p)
-  fname <- paste0("0_figs/Paciente_longitudinal/permusplines_sexo_", taxon_i, ".png")
-  ggsave(fname, plot = p, width = 6, height = 5, dpi = 300)
+  fname <- paste0("0_figs/Paciente_longitudinal/permusplines_sexo_", taxon_i, ".svg")
+  ggsave(fname, plot = p, width = 6, height = 5)
 }
 
 # Permuspliner para alfa-diversidad por sexo
@@ -621,8 +629,8 @@ p_dbp <- permuspliner.plot.permsplines(
 alpha_permu_sexo <- (p_shannon / p_chao / p_dbp) +
   plot_layout(ncol = 1)
 
-png("0_figs/Paciente_longitudinal/alpha_permu_sexo.png",
-    width = 1000, height = 1400, res = 120)
+svg("0_figs/Paciente_longitudinal/alpha_permu_sexo.svg",
+    width = 8, height = 10)
 print(alpha_permu_sexo)
 dev.off()
 
@@ -681,6 +689,9 @@ cat(sprintf(
   smooths_inmuno$edf[1], smooths_inmuno$F[1], smooths_inmuno$p.value[1]
 ))
 cat("R² ajustado:", round(summary(gam_model_inmuno)$r.sq, 4), "\n")
+
+write_tsv(coefs_inmuno, "0_tables/resultados_gam_inmunodeprimido_global.tsv")
+write_tsv(smooths_inmuno, "0_tables/resultados_gam_inmunodeprimido_temporal.tsv")
 
 df_top$Inmunosuprimido[df_top$Inmunosuprimido == ""] <- NA
 
@@ -754,85 +765,359 @@ df_top %>%
   labs(title = "Efectos significativos de inmunosupresión") +
   theme_bw()
 
-ggsave("0_figs/Paciente_longitudinal/boxplot_sign_taxa_inmuno.png",
-       width = 10, height = 8, dpi = 300)
+ggsave("0_figs/Paciente_longitudinal/boxplot_sign_taxa_inmuno.svg",
+       width = 10, height = 8)
 
 # ----------------------------------------------------------------------
 # 10. GAM: TRAQUEOSTOMÍA, VMNI, GNAF (RESUMEN)
 # ----------------------------------------------------------------------
-# Traqueostomía
+# TRAQUEOSTOMÍA 
 splinectome_df$Traqueostomia[splinectome_df$Traqueostomia == ""] <- NA
+splinectome_df$Traqueostomia <- factor(splinectome_df$Traqueostomia,
+                                       levels = c("No", "Sí"))
+
+datos_traqueo <- splinectome_df %>%
+  filter(!is.na(rel_abund), !is.na(Tiempo))
 
 gam_model_traqueo <- gam(
   rel_abund ~ Traqueostomia +
     s(Tiempo, k = 4, bs = "cr") +
     s(NHC, bs = "re"),
-  data   = splinectome_df %>%
-    filter(!is.na(rel_abund), !is.na(Tiempo), !is.na(Traqueostomia)),
+  data   = datos_traqueo,
   method = "REML"
 )
+
+summary(gam_model_traqueo)
 
 coefs_traqueo <- summary(gam_model_traqueo)$p.table %>%
   as.data.frame() %>%
   tibble::rownames_to_column("Termino") %>%
-  filter(Termino == "TraqueostomiaSí") %>%
-  transmute(
-    Variable  = "Traqueostomia",
-    Efecto    = Termino,
-    Estimate  = Estimate,
-    Std.Error = `Std. Error`,
-    t.value   = `t value`,
-    p.value   = `Pr(>|t|)`
+  filter(Termino != "s(Tiempo)") %>%
+  mutate(
+    Termino = case_when(
+      Termino == "(Intercept)"          ~ "Intercepto",
+      Termino == "TraqueostomiaSí"      ~ "Traqueostomía (Sí vs No)",
+      TRUE                              ~ Termino
+    )
+  ) %>%
+  select(
+    Termino,
+    Estimate    = Estimate,
+    Std.Error   = `Std. Error`,
+    t.value     = `t value`,
+    p.value     = `Pr(>|t|)`
   )
 
-write_tsv(coefs_traqueo, "0_tables/resultados_gam_traqueostomia.tsv")
+smooths_traqueo <- summary(gam_model_traqueo)$s.table %>%
+  as.data.frame() %>%
+  tibble::rownames_to_column("Smooth") %>%
+  mutate(p.value = `p-value`) %>%
+  select(Smooth, edf, Ref.df = `Ref.df`, F = F, p.value)
 
-# VMNI
-splinectome_df$VMNI.durante.el.ingreso[
-  splinectome_df$VMNI.durante.el.ingreso == ""
-] <- NA
+write_tsv(coefs_traqueo, "0_tables/resultados_gam_traqueostomia_global.tsv")
+write_tsv(smooths_traqueo, "0_tables/resultados_gam_traqueostomia_temporal.tsv")
+
+df_top$Traqueostomia[df_top$Traqueostomia == ""] <- NA
+df_top$Traqueostomia <- factor(df_top$Traqueostomia,
+                               levels = c("No", "Sí"))
+
+resultados_traqueo_taxones <- purrr::map_dfr(
+  unique(df_top$Taxon_simple),
+  function(taxon) {
+    datos_taxon <- df_top %>%
+      filter(Taxon_simple == taxon, !is.na(Traqueostomia)) %>%
+      mutate(Traqueostomia = factor(Traqueostomia, levels = c("No", "Sí")))
+    
+    n_traq <- sum(datos_taxon$Traqueostomia == "Sí", na.rm = TRUE)
+    n_total  <- nrow(datos_taxon)
+    
+    if (n_total > 20 & n_traq > 2) {
+      modelo <- gam(
+        rel_abund ~ Traqueostomia +
+          s(Tiempo, k = 3, bs = "cr") +
+          s(NHC, bs = "re"),
+        data   = datos_taxon,
+        method = "REML",
+        family = gaussian()
+      )
+      
+      coef_table <- summary(modelo)$p.table %>%
+        as.data.frame() %>%
+        tibble::rownames_to_column("Term") %>%
+        filter(Term == "TraqueostomiaSí")
+      
+      coef_traq <- tibble(
+        Taxon    = taxon,
+        n_total  = n_total,
+        n_traq   = n_traq,
+        beta     = coef_table$Estimate,
+        se       = coef_table$`Std. Error`,
+        t_value  = coef_table$`t value`,
+        p_value  = coef_table$`Pr(>|t|)`
+      )
+      
+      assign(paste0("gam_traq_", taxon), modelo, envir = .GlobalEnv)
+      return(coef_traq)
+    }
+    NULL
+  }
+)
+
+tabla_traqueo <- resultados_traqueo_taxones %>%
+  arrange(p_value) %>%
+  mutate(
+    p_value_adj = p.adjust(p_value, method = "BH"),
+    sig = case_when(
+      p_value_adj < 0.05 ~ "***",
+      p_value     < 0.05 ~ "**",
+      p_value     < 0.1  ~ "*",
+      TRUE              ~ ""
+    ),
+    beta        = round(beta, 4),
+    se          = round(se, 4),
+    p_value     = round(p_value, 4),
+    p_value_adj = round(p_value_adj, 4)
+  ) %>%
+  select(Taxon, n_total, n_traq, beta, se, p_value, p_value_adj, sig)
+
+write_tsv(tabla_traqueo,
+          "0_tables/resultados_gam_traqueostomia_por_taxon.tsv")
+
+# VENTILACIÓN MECÁNICA NO INVASIVA (VMNI)
+splinectome_df$VMNI.durante.el.ingreso[splinectome_df$VMNI.durante.el.ingreso == ""] <- NA
+splinectome_df$VMNI.durante.el.ingreso <- factor(splinectome_df$VMNI.durante.el.ingreso,
+                                       levels = c("No", "Sí"))
+
+datos_vmni <- splinectome_df %>%
+  filter(!is.na(rel_abund), !is.na(Tiempo))
 
 gam_model_vmni <- gam(
   rel_abund ~ VMNI.durante.el.ingreso +
     s(Tiempo, k = 4, bs = "cr") +
     s(NHC, bs = "re"),
-  data   = splinectome_df %>%
-    filter(!is.na(rel_abund),
-           !is.na(Tiempo),
-           !is.na(VMNI.durante.el.ingreso)),
+  data   = datos_vmni,
   method = "REML"
 )
+
+summary(gam_model_vmni)
 
 coefs_vmni <- summary(gam_model_vmni)$p.table %>%
   as.data.frame() %>%
   tibble::rownames_to_column("Termino") %>%
-  filter(Termino == "VMNI.durante.el.ingresoSí") %>%
-  transmute(
-    Variable  = "VMNI.durante.el.ingreso",
-    Efecto    = Termino,
-    Estimate  = Estimate,
-    Std.Error = `Std. Error`,
-    t.value   = `t value`,
-    p.value   = `Pr(>|t|)`
+  filter(Termino != "s(Tiempo)") %>%
+  mutate(
+    Termino = case_when(
+      Termino == "(Intercept)"          ~ "Intercepto",
+      Termino == "VMNI.durante.el.ingresoSí"      ~ "VMNI.durante.el.ingreso (Sí vs No)",
+      TRUE                              ~ Termino
+    )
+  ) %>%
+  select(
+    Termino,
+    Estimate    = Estimate,
+    Std.Error   = `Std. Error`,
+    t.value     = `t value`,
+    p.value     = `Pr(>|t|)`
   )
 
-write_tsv(coefs_vmni, "0_tables/resultados_gam_vmni.tsv")
+smooths_vmni <- summary(gam_model_vmni)$s.table %>%
+  as.data.frame() %>%
+  tibble::rownames_to_column("Smooth") %>%
+  mutate(p.value = `p-value`) %>%
+  select(Smooth, edf, Ref.df = `Ref.df`, F = F, p.value)
+
+write_tsv(coefs_vmni, "0_tables/resultados_gam_vmni_global.tsv")
+write_tsv(smooths_vmni, "0_tables/resultados_gam_vmni_temporal.tsv")
+
+df_top$VMNI.durante.el.ingreso[df_top$VMNI.durante.el.ingreso == ""] <- NA
+df_top$VMNI.durante.el.ingreso <- factor(df_top$VMNI.durante.el.ingreso,
+                               levels = c("No", "Sí"))
+
+resultados_vmni_taxones <- purrr::map_dfr(
+  unique(df_top$Taxon_simple),
+  function(taxon) {
+    datos_taxon <- df_top %>%
+      filter(Taxon_simple == taxon, !is.na(VMNI.durante.el.ingreso)) %>%
+      mutate(VMNI.durante.el.ingreso = factor(VMNI.durante.el.ingreso, levels = c("No", "Sí")))
+    
+    n_vmni <- sum(datos_taxon$VMNI.durante.el.ingreso == "Sí", na.rm = TRUE)
+    n_total  <- nrow(datos_taxon)
+    
+    if (n_total > 20 & n_vmni > 2) {
+      modelo <- gam(
+        rel_abund ~ VMNI.durante.el.ingreso +
+          s(Tiempo, k = 3, bs = "cr") +
+          s(NHC, bs = "re"),
+        data   = datos_taxon,
+        method = "REML",
+        family = gaussian()
+      )
+      
+      coef_table <- summary(modelo)$p.table %>%
+        as.data.frame() %>%
+        tibble::rownames_to_column("Term") %>%
+        filter(Term == "VMNI.durante.el.ingresoSí")
+      
+      coef_vmni <- tibble(
+        Taxon    = taxon,
+        n_total  = n_total,
+        n_vmni   = n_vmni,
+        beta     = coef_table$Estimate,
+        se       = coef_table$`Std. Error`,
+        t_value  = coef_table$`t value`,
+        p_value  = coef_table$`Pr(>|t|)`
+      )
+      
+      assign(paste0("gam_vmni_", taxon), modelo, envir = .GlobalEnv)
+      return(coef_vmni)
+    }
+    NULL
+  }
+)
+
+tabla_vmni <- resultados_vmni_taxones %>%
+  arrange(p_value) %>%
+  mutate(
+    p_value_adj = p.adjust(p_value, method = "BH"),
+    sig = case_when(
+      p_value_adj < 0.05 ~ "***",
+      p_value     < 0.05 ~ "**",
+      p_value     < 0.1  ~ "*",
+      TRUE              ~ ""
+    ),
+    beta        = round(beta, 4),
+    se          = round(se, 4),
+    p_value     = round(p_value, 4),
+    p_value_adj = round(p_value_adj, 4)
+  ) %>%
+  select(Taxon, n_total, n_vmni, beta, se, p_value, p_value_adj, sig)
+
+write_tsv(tabla_vmni,
+          "0_tables/resultados_gam_vmni_por_taxon.tsv")
+
+df_top %>%
+  filter(Taxon_simple %in% c("Clostridium_innocuum_group", "Prevotella_9")) %>%
+  ggplot(aes(VMNI.durante.el.ingreso, rel_abund, fill = VMNI.durante.el.ingreso)) +
+  geom_boxplot(alpha = 0.7) +
+  scale_y_log10(labels = scales::percent) +
+  facet_wrap(~ Taxon_simple, scales = "free_y") +
+  labs(title = "Efectos significativos de ventilación mecánica no invasiva") +
+  theme_bw()
+
+ggsave("0_figs/Paciente_longitudinal/boxplot_sign_taxa_vmni.svg",
+       width = 10, height = 8)
 
 # GAFAS NASALES DE ALTO FLUJO (GNAF)
-splinectome_df$GNAF.durante.elingreso[
-  splinectome_df$GNAF.durante.elingreso == ""
-] <- NA
+splinectome_df$GNAF.durante.elingreso[splinectome_df$GNAF.durante.elingreso == ""] <- NA
+splinectome_df$GNAF.durante.elingreso <- factor(splinectome_df$GNAF.durante.elingreso,
+                                                levels = c("No", "Sí"))
+
+datos_gnaf <- splinectome_df %>%
+  filter(!is.na(rel_abund), !is.na(Tiempo))
 
 gam_model_gnaf <- gam(
   rel_abund ~ GNAF.durante.elingreso +
     s(Tiempo, k = 4, bs = "cr") +
     s(NHC, bs = "re"),
-  data   = splinectome_df %>%
-    filter(!is.na(rel_abund),
-           !is.na(Tiempo),
-           !is.na(GNAF.durante.elingreso)),
+  data   = datos_gnaf,
   method = "REML"
 )
+
+summary(gam_model_gnaf)
+
+coefs_gnaf <- summary(gam_model_gnaf)$p.table %>%
+  as.data.frame() %>%
+  tibble::rownames_to_column("Termino") %>%
+  filter(Termino != "s(Tiempo)") %>%
+  mutate(
+    Termino = case_when(
+      Termino == "(Intercept)"          ~ "Intercepto",
+      Termino == "GNAF.durante.elingresoSí"      ~ "GNAF.durante.elingreso (Sí vs No)",
+      TRUE                              ~ Termino
+    )
+  ) %>%
+  select(
+    Termino,
+    Estimate    = Estimate,
+    Std.Error   = `Std. Error`,
+    t.value     = `t value`,
+    p.value     = `Pr(>|t|)`
+  )
+
+smooths_gnaf <- summary(gam_model_gnaf)$s.table %>%
+  as.data.frame() %>%
+  tibble::rownames_to_column("Smooth") %>%
+  mutate(p.value = `p-value`) %>%
+  select(Smooth, edf, Ref.df = `Ref.df`, F = F, p.value)
+
+write_tsv(coefs_gnaf, "0_tables/resultados_gam_gnaf_global.tsv")
+write_tsv(smooths_gnaf, "0_tables/resultados_gam_gnaf_temporal.tsv")
+
+df_top$GNAF.durante.elingreso[df_top$GNAF.durante.elingreso == ""] <- NA
+df_top$GNAF.durante.elingreso <- factor(df_top$GNAF.durante.elingreso,
+                                         levels = c("No", "Sí"))
+
+resultados_gnaf_taxones <- purrr::map_dfr(
+  unique(df_top$Taxon_simple),
+  function(taxon) {
+    datos_taxon <- df_top %>%
+      filter(Taxon_simple == taxon, !is.na(GNAF.durante.elingreso)) %>%
+      mutate(GNAF.durante.elingreso = factor(GNAF.durante.elingreso, levels = c("No", "Sí")))
+    
+    n_gnaf <- sum(datos_taxon$GNAF.durante.elingreso == "Sí", na.rm = TRUE)
+    n_total  <- nrow(datos_taxon)
+    
+    if (n_total > 20 & n_gnaf > 2) {
+      modelo <- gam(
+        rel_abund ~ GNAF.durante.elingreso +
+          s(Tiempo, k = 3, bs = "cr") +
+          s(NHC, bs = "re"),
+        data   = datos_taxon,
+        method = "REML",
+        family = gaussian()
+      )
+      
+      coef_table <- summary(modelo)$p.table %>%
+        as.data.frame() %>%
+        tibble::rownames_to_column("Term") %>%
+        filter(Term == "GNAF.durante.elingresoSí")
+      
+      coef_gnaf <- tibble(
+        Taxon    = taxon,
+        n_total  = n_total,
+        n_gnaf   = n_gnaf,
+        beta     = coef_table$Estimate,
+        se       = coef_table$`Std. Error`,
+        t_value  = coef_table$`t value`,
+        p_value  = coef_table$`Pr(>|t|)`
+      )
+      
+      assign(paste0("gam_gnaf_", taxon), modelo, envir = .GlobalEnv)
+      return(coef_gnaf)
+    }
+    NULL
+  }
+)
+
+tabla_gnaf <- resultados_gnaf_taxones %>%
+  arrange(p_value) %>%
+  mutate(
+    p_value_adj = p.adjust(p_value, method = "BH"),
+    sig = case_when(
+      p_value_adj < 0.05 ~ "***",
+      p_value     < 0.05 ~ "**",
+      p_value     < 0.1  ~ "*",
+      TRUE              ~ ""
+    ),
+    beta        = round(beta, 4),
+    se          = round(se, 4),
+    p_value     = round(p_value, 4),
+    p_value_adj = round(p_value_adj, 4)
+  ) %>%
+  select(Taxon, n_total, n_gnaf, beta, se, p_value, p_value_adj, sig)
+
+write_tsv(tabla_gnaf,
+          "0_tables/resultados_gam_gnaf_por_taxon.tsv")
 
 # ----------------------------------------------------------------------
 # 11. SOM: SELF-ORGANIZING MAP
@@ -888,8 +1173,8 @@ codes_scaled <- scale(som_model$codes[[1]])
 som_cluster  <- cutree(hclust(dist(codes_scaled)), k = 3)
 
 # Visualizaciones básicas SOM
-png("0_figs/Paciente_longitudinal/som_visualizations.png",
-    width = 1600, height = 1600, res = 150)
+svg("0_figs/Paciente_longitudinal/som_visualizations.svg",
+    width = 10, height = 10)
 
 par(mfrow = c(3, 3))
 
@@ -997,7 +1282,7 @@ som_temporal_plot <- ggplot(
   theme_bw()
 
 ggsave(
-  "0_figs/Paciente_longitudinal/som_temporal.png",
+  "0_figs/Paciente_longitudinal/som_temporal.svg",
   som_temporal_plot,
   width  = 10,
   height = 12

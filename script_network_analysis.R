@@ -28,11 +28,11 @@
 #   - 3_cooccurrence_network/cooccur_alpha_sign_selected.tsv
 #   - 3_cooccurrence_network/net.sp.txt
 #   - 0_tables/abundance_matrix.tsv (para FastSpar)
-#   - 0_figs/cooccur_alpha_mle.png
-#   - 0_figs/cooccur_network_sign.png
-#   - 0_figs/cooccur_clustering_network.png
-#   - 0_figs/cooccur_network_sign_clusterized.png
-#   - 0_figs/correlation_network.png
+#   - 0_figs/cooccur_alpha_mle.svg
+#   - 0_figs/cooccur_network_sign.svg
+#   - 0_figs/cooccur_clustering_network.svg
+#   - 0_figs/cooccur_network_sign_clusterized.svg
+#   - 0_figs/correlation_network.svg
 #
 # Requisitos:
 #   - R >= 4.0
@@ -48,6 +48,10 @@ set.seed(123)
 
 PROJECT_DIR <- "/home/sandra/Projects/UCI_Variables/"
 setwd(PROJECT_DIR)
+
+dir.create("0_figs/", recursive = TRUE, showWarnings = FALSE)
+dir.create("0_tables/", recursive = TRUE, showWarnings = FALSE)
+dir.create("3_cooccurrence_network/", recursive = TRUE, showWarnings = FALSE)
 
 # ----------------------------------------------------------------------
 # 1. LIBRERÍAS
@@ -222,10 +226,9 @@ plotgg(
   text.size   = 2.5
 )
 ggsave(
-  "0_figs/cooccur_alpha_mle.png",
+  "0_figs/cooccur_alpha_mle.svg",
   width  = 10,
-  height = 10,
-  dpi    = 300
+  height = 10
 )
 
 # 3.7 Red de co-ocurrencia (affinity)
@@ -254,11 +257,10 @@ V(network)$color <- pal_phy[ as.numeric(phylum_fac) ]
 edge_vals        <- as.numeric(E(network)$weight)
 E(network)$color <- ifelse(edge_vals > 0, "blue", "red")
 
-png(
-  filename = "0_figs/cooccur_network_sign.png",
-  width    = 2500,
-  height   = 2500,
-  res      = 300
+svg(
+  filename = "0_figs/cooccur_network_sign.svg",
+  width    = 8,
+  height   = 8
 )
 plot(
   network,
@@ -284,20 +286,18 @@ dev.off()
 # 3.8 Clustering de la red
 ceb <- cluster_edge_betweenness(network)
 
-png(
-  filename = "0_figs/cooccur_clustering_network.png",
-  width    = 2500,
-  height   = 2500,
-  res      = 300
+svg(
+  filename = "0_figs/cooccur_clustering_network.svg",
+  width    = 8,
+  height   = 8
 )
 plot_dendrogram(ceb, mode = "hclust")
 dev.off()
 
-png(
-  filename = "0_figs/cooccur_network_sign_clusterized2.png",
-  width    = 2500,
-  height   = 2500,
-  res      = 300
+svg(
+  filename = "0_figs/cooccur_network_sign_clusterized.svg",
+  width    = 8,
+  height   = 8
 )
 plot(
   ceb,
@@ -486,8 +486,8 @@ p_net <- ggraph(g_tbl, layout = "fr") +
   labs(title = "Red de correlación con FastSpar")
 
 ggsave(
-  "0_figs/correlation_network.png",
+  "0_figs/correlation_network.svg",
   p_net,
-  width  = 5,
-  height = 5
+  width  = 8,
+  height = 8
 )

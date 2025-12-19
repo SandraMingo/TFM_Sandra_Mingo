@@ -18,9 +18,9 @@
 #   - ANCOMBC2_Sexo.csv
 #   - ANCOMBC2_Inmunosuprimido.csv
 #   - ANCOMBC2_VMNI.csv
-#   - ancombc-sexo.png
-#   - ancombc-inmuno.png
-#   - ancombc-vmni.png
+#   - ancombc-sexo.svg
+#   - ancombc-inmuno.svg
+#   - ancombc-vmni.svg
 #
 # Requisitos:
 #   - R >= 4.0
@@ -32,6 +32,8 @@
 
 PROJECT_DIR <- "/home/sandra/Projects/UCI_Variables/"
 setwd(PROJECT_DIR)
+
+dir.create("0_figs", showWarnings = FALSE, recursive = TRUE)
 
 # ----------------------------------------------------------------------
 # 1. LIBRERÍAS
@@ -202,10 +204,10 @@ plot_ancombc2 <- function(df, variable, q_threshold = 0.05, title = NULL) {
 # 6. GRÁFICOS DE RESULTADOS
 # ----------------------------------------------------------------------
 plot_ancombc2(res_sexo, "Sexo", title = "ANCOM-BC2: Sexo")
-ggsave("0_figs/ancombc-sexo.png", width = 12, height = 8)
+ggsave("0_figs/ancombc-sexo.svg", width = 10, height = 8)
 
 plot_ancombc2(res_inmuno, "Inmunosuprimido", title = "ANCOM-BC2: Inmunosuprimido")
-ggsave("0_figs/ancombc-inmuno.png", width = 12, height = 8)
+ggsave("0_figs/ancombc-inmuno.svg", width = 10, height = 8)
 
 plot_ancombc2(res_vmni, "VMNI.durante.el.ingreso", title = "ANCOM-BC2: VMNI")
-ggsave("0_figs/ancombc-vmni.png", width = 12, height = 8)
+ggsave("0_figs/ancombc-vmni.svg", width = 10, height = 8)
