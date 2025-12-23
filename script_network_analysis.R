@@ -108,7 +108,7 @@ data_mean <- rowMeans(data_tab_prop)
 cca.data  <- cbind(data_tab_prop, data_mean)
 cca.data  <- cca.data[order(cca.data[, "data_mean"], decreasing = TRUE), ]
 
-# Número de taxones top (puedes ajustar este parámetro)
+# Número de taxones top
 n_top <- 25
 topn  <- cca.data[1:n_top, -ncol(cca.data), drop = FALSE]
 
@@ -374,6 +374,8 @@ write.table(
   quote     = FALSE,
   row.names = FALSE
 )
+
+# Ejecutar FastSpar
 
 # ----------------------------------------------------------------------
 # 5. PROCESAR RESULTADOS FASTSPAR Y GENERAR RED DE CORRELACIÓN
